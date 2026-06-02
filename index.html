@@ -30,7 +30,6 @@
     body{margin:0;min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;background:linear-gradient(180deg,var(--color-bg),var(--color-surface));color:var(--color-text)}
     button,input,select,textarea{font:inherit}
     button{cursor:pointer}
-    a{color:inherit}
     .shell{max-width:1100px;margin:0 auto;padding:var(--space-4)}
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding-block:var(--space-3) var(--space-8)}
     .brand{display:flex;align-items:center;gap:var(--space-3)}
@@ -38,7 +37,8 @@
     .logo svg{width:22px;height:22px}
     .brand h1{font-family:var(--font-display);font-size:var(--text-lg);line-height:1.1;margin:0}
     .brand p{margin:0;color:var(--color-text-muted);font-size:var(--text-sm)}
-    .theme-toggle{min-width:44px;min-height:44px;border:1px solid var(--color-border);background:var(--color-surface);border-radius:var(--radius-full);padding:0 var(--space-4);color:var(--color-text)}
+    .toolbar{display:flex;gap:.75rem;align-items:center}
+    .theme-toggle{min-width:44px;min-height:44px;border:1px solid var(--color-border);background:var(--color-surface);border-radius:var(--radius-full);padding:0 var(--space-4);color:var(--color-text);font-weight:700}
     .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:var(--space-6);align-items:stretch}
     .panel{background:color-mix(in srgb,var(--color-surface) 88%, transparent);border:1px solid color-mix(in srgb,var(--color-text) 12%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)}
     .hero-copy{padding:var(--space-8)}
@@ -89,41 +89,44 @@
     <header class="topbar">
       <div class="brand">
         <div class="logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-label="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 6h7l-7 12h12l-3-5"></path>
           </svg>
         </div>
         <div>
-          <h1>Unity CS 批量转文字</h1>
-          <p>把 Unity 项目里的 .cs 文件批量导出成 .txt 或 ZIP。</p>
+          <h1 data-i18n="brandTitle">Unity CS 批量转文字</h1>
+          <p data-i18n="brandDesc">把 Unity 项目里的 .cs 文件批量导出成 .txt 或 ZIP。</p>
         </div>
       </div>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">🌙</button>
+      <div class="toolbar">
+        <button class="theme-toggle" type="button" id="langToggle">EN</button>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">🌙</button>
+      </div>
     </header>
 
     <section class="hero">
       <article class="panel hero-copy">
-        <span class="eyebrow">Client-side · No upload</span>
-        <h2>直接在浏览器里批量处理 Unity C# 文件</h2>
-        <p>把整个 Unity 项目文件夹拖进来，工具会自动筛选 <span class="mono">.cs</span> 文件，读取源码内容，并按你的命名规则输出成文字文件。所有处理都在本地浏览器完成，不会上传到服务器。</p>
+        <span class="eyebrow" data-i18n="eyebrow">Client-side · No upload</span>
+        <h2 data-i18n="heroTitle">直接在浏览器里批量处理 Unity C# 文件</h2>
+        <p id="heroDesc"></p>
       </article>
       <aside class="panel stats">
-        <div class="stat"><strong id="stat-files">0</strong><span>已识别 .cs 文件</span></div>
-        <div class="stat"><strong id="stat-lines">0</strong><span>源码总行数（估算）</span></div>
-        <div class="stat"><strong id="stat-size">0 KB</strong><span>文本总大小（估算）</span></div>
+        <div class="stat"><strong id="stat-files">0</strong><span data-i18n="statFilesLabel">已识别 .cs 文件</span></div>
+        <div class="stat"><strong id="stat-lines">0</strong><span data-i18n="statLinesLabel">源码总行数（估算）</span></div>
+        <div class="stat"><strong id="stat-size">0 KB</strong><span data-i18n="statSizeLabel">文本总大小（估算）</span></div>
       </aside>
     </section>
 
     <section class="layout">
       <main class="panel workspace">
         <div id="dropzone" class="dropzone">
-          <h3>拖入 Unity 项目文件夹或多个 .cs 文件</h3>
-          <p>支持直接拖拽文件夹、也支持点击选择多个文件。推荐把整个项目目录拖进来，网页会自动读取其中所有 C# 脚本。</p>
+          <h3 data-i18n="dropTitle">拖入 Unity 项目文件夹或多个 .cs 文件</h3>
+          <p data-i18n="dropDesc">支持直接拖拽文件夹、也支持点击选择多个文件。推荐把整个项目目录拖进来，网页会自动读取其中所有 C# 脚本。</p>
           <div class="actions">
-            <button class="btn primary" id="pickFiles" type="button">选择文件 / 文件夹</button>
-            <button class="btn" id="exportZip" type="button" disabled>导出 TXT ZIP</button>
-            <button class="btn" id="exportMerged" type="button" disabled>导出合并文本</button>
-            <button class="btn" id="clearAll" type="button">清空</button>
+            <button class="btn primary" id="pickFiles" type="button" data-i18n="pickBtn">选择文件 / 文件夹</button>
+            <button class="btn" id="exportZip" type="button" disabled data-i18n="zipBtn">导出 TXT ZIP</button>
+            <button class="btn" id="exportMerged" type="button" disabled data-i18n="mergedBtn">导出合并文本</button>
+            <button class="btn" id="clearAll" type="button" data-i18n="clearBtn">清空</button>
           </div>
           <input id="fileInput" class="hidden" type="file" multiple webkitdirectory />
           <div id="status" class="status">等待导入文件。</div>
@@ -133,21 +136,21 @@
           <div class="grid2">
             <div class="panel control-card">
               <label>
-                导出命名方式
+                <span data-i18n="namingLabel">导出命名方式</span>
                 <select id="nameMode">
-                  <option value="same">保持原文件名（PlayerController.cs → PlayerController.txt）</option>
-                  <option value="path">按相对路径生成名称</option>
-                  <option value="index">自动编号</option>
+                  <option value="same"></option>
+                  <option value="path"></option>
+                  <option value="index"></option>
                 </select>
               </label>
-              <p class="hint">按路径模式会把路径中的斜杠转成下划线，方便统一整理。</p>
+              <p class="hint" data-i18n="namingHint">按路径模式会把路径中的斜杠转成下划线，方便统一整理。</p>
             </div>
             <div class="panel control-card">
               <label>
-                合并文件标题前缀
+                <span data-i18n="prefixLabel">合并文件标题前缀</span>
                 <input id="headingPrefix" type="text" value="===== FILE:" placeholder="例如 ===== FILE:" />
               </label>
-              <p class="hint">导出合并文本时，每个脚本会加一个标题，方便你后续喂给 AI 或文档工具。</p>
+              <p class="hint" data-i18n="prefixHint">导出合并文本时，每个脚本会加一个标题，方便你后续喂给 AI 或文档工具。</p>
             </div>
           </div>
         </div>
@@ -155,8 +158,8 @@
         <section class="results">
           <div class="result-head">
             <div>
-              <h3>脚本列表</h3>
-              <p class="hint">这里只显示前几行预览，完整内容会在导出文件里。</p>
+              <h3 data-i18n="listTitle">脚本列表</h3>
+              <p class="hint" data-i18n="listHint">这里只显示前几行预览，完整内容会在导出文件里。</p>
             </div>
           </div>
           <div id="fileList" class="file-list"></div>
@@ -165,30 +168,30 @@
 
       <aside class="sidebar">
         <section class="panel side-card">
-          <h3>它能做什么</h3>
+          <h3 data-i18n="side1Title">它能做什么</h3>
           <ul>
-            <li>批量读取 Unity 项目中的 <span class="mono">.cs</span> 脚本。</li>
-            <li>每个脚本单独转成 <span class="mono">.txt</span>。</li>
-            <li>一键导出全部文本为 ZIP。</li>
-            <li>也可以把所有脚本合并成一个总文本。</li>
+            <li id="side1a"></li>
+            <li id="side1b"></li>
+            <li data-i18n="side1c">一键导出全部文本为 ZIP。</li>
+            <li data-i18n="side1d">也可以把所有脚本合并成一个总文本。</li>
           </ul>
         </section>
         <section class="panel side-card">
-          <h3>适合的场景</h3>
+          <h3 data-i18n="side2Title">适合的场景</h3>
           <ul>
-            <li>把项目代码整理给老师、同学或队友看。</li>
-            <li>发给 AI 做代码分析、重构或注释生成。</li>
-            <li>做项目归档，把脚本转成纯文本备份。</li>
+            <li data-i18n="side2a">把项目代码整理给老师、同学或队友看。</li>
+            <li data-i18n="side2b">发给 AI 做代码分析、重构或注释生成。</li>
+            <li data-i18n="side2c">做项目归档，把脚本转成纯文本备份。</li>
           </ul>
         </section>
         <section class="panel side-card">
-          <h3>使用提醒</h3>
-          <p>这个网页只读取文本，不会修改你的 Unity 原文件。若项目很大，第一次读取会花几秒钟。</p>
+          <h3 data-i18n="side3Title">使用提醒</h3>
+          <p data-i18n="side3Desc">这个网页只读取文本，不会修改你的 Unity 原文件。若项目很大，第一次读取会花几秒钟。</p>
         </section>
       </aside>
     </section>
 
-    <footer class="footer">本工具在浏览器本地处理文件；读取本地文件使用 FileReader，ZIP 打包依赖 JSZip。</footer>
+    <footer class="footer" data-i18n="footer">本工具在浏览器本地处理文件；读取本地文件使用 FileReader，ZIP 打包依赖 JSZip。</footer>
   </div>
 
   <script>
@@ -206,6 +209,10 @@
     const statLines = document.getElementById('stat-lines');
     const statSize = document.getElementById('stat-size');
     const themeToggle = document.querySelector('[data-theme-toggle]');
+    const langToggle = document.getElementById('langToggle');
+    const heroDesc = document.getElementById('heroDesc');
+    const side1a = document.getElementById('side1a');
+    const side1b = document.getElementById('side1b');
 
     let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
@@ -217,6 +224,142 @@
     });
 
     let scripts = [];
+    let currentLang = 'zh';
+
+    const i18n = {
+      zh: {
+        pageTitle: 'Unity CS 批量转文字工具',
+        brandTitle: 'Unity CS 批量转文字',
+        brandDesc: '把 Unity 项目里的 .cs 文件批量导出成 .txt 或 ZIP。',
+        eyebrow: 'Client-side · No upload',
+        heroTitle: '直接在浏览器里批量处理 Unity C# 文件',
+        heroDesc: '把整个 Unity 项目文件夹拖进来，工具会自动筛选 <span class="mono">.cs</span> 文件，读取源码内容，并按你的命名规则输出成文字文件。所有处理都在本地浏览器完成，不会上传到服务器。',
+        statFilesLabel: '已识别 .cs 文件',
+        statLinesLabel: '源码总行数（估算）',
+        statSizeLabel: '文本总大小（估算）',
+        dropTitle: '拖入 Unity 项目文件夹或多个 .cs 文件',
+        dropDesc: '支持直接拖拽文件夹、也支持点击选择多个文件。推荐把整个项目目录拖进来，网页会自动读取其中所有 C# 脚本。',
+        pickBtn: '选择文件 / 文件夹',
+        zipBtn: '导出 TXT ZIP',
+        mergedBtn: '导出合并文本',
+        clearBtn: '清空',
+        statusWaiting: '等待导入文件。',
+        namingLabel: '导出命名方式',
+        optSame: '保持原文件名（PlayerController.cs → PlayerController.txt）',
+        optPath: '按相对路径生成名称',
+        optIndex: '自动编号',
+        namingHint: '按路径模式会把路径中的斜杠转成下划线，方便统一整理。',
+        prefixLabel: '合并文件标题前缀',
+        prefixHint: '导出合并文本时，每个脚本会加一个标题，方便你后续喂给 AI 或文档工具。',
+        prefixPlaceholder: '例如 ===== FILE:',
+        listTitle: '脚本列表',
+        listHint: '这里只显示前几行预览，完整内容会在导出文件里。',
+        side1Title: '它能做什么',
+        side1a: '批量读取 Unity 项目中的 <span class="mono">.cs</span> 脚本。',
+        side1b: '每个脚本单独转成 <span class="mono">.txt</span>。',
+        side1c: '一键导出全部文本为 ZIP。',
+        side1d: '也可以把所有脚本合并成一个总文本。',
+        side2Title: '适合的场景',
+        side2a: '把项目代码整理给老师、同学或队友看。',
+        side2b: '发给 AI 做代码分析、重构或注释生成。',
+        side2c: '做项目归档，把脚本转成纯文本备份。',
+        side3Title: '使用提醒',
+        side3Desc: '这个网页只读取文本，不会修改你的 Unity 原文件。若项目很大，第一次读取会花几秒钟。',
+        footer: '本工具在浏览器本地处理文件；读取本地文件使用 FileReader，ZIP 打包依赖 JSZip。',
+        emptyTitle: '还没有文件',
+        emptyDesc: '导入后，这里会列出所有 Unity C# 脚本。',
+        noCs: '没有找到 .cs 文件。请拖入 Unity 项目文件夹或选择多个 C# 文件。',
+        reading: (n) => `正在读取 ${n} 个 .cs 文件...`,
+        loaded: (n) => `已载入 ${n} 个 .cs 文件，可以开始导出。`,
+        cleared: '已清空。',
+        zipMissing: 'JSZip 没有加载成功，请检查网络后刷新页面。',
+        zipCreating: '正在生成 ZIP...',
+        zipDone: 'ZIP 已导出完成。',
+        mergedDone: '合并文本已导出完成。',
+        lines: '行',
+        switchLang: 'EN'
+      },
+      en: {
+        pageTitle: 'Unity CS Batch to Text Tool',
+        brandTitle: 'Unity CS Batch to Text',
+        brandDesc: 'Batch export .cs files from a Unity project as .txt or ZIP.',
+        eyebrow: 'Client-side · No upload',
+        heroTitle: 'Batch process Unity C# files right in the browser',
+        heroDesc: 'Drop in a whole Unity project folder and the tool will automatically detect <span class="mono">.cs</span> files, read the source code, and export them as text files using your preferred naming rule. Everything runs locally in the browser and nothing is uploaded.',
+        statFilesLabel: 'Detected .cs files',
+        statLinesLabel: 'Estimated total lines',
+        statSizeLabel: 'Estimated text size',
+        dropTitle: 'Drop a Unity project folder or multiple .cs files',
+        dropDesc: 'You can drag in a folder directly or click to choose multiple files. The best option is to drop the whole project folder so the page can scan all C# scripts automatically.',
+        pickBtn: 'Choose files / folder',
+        zipBtn: 'Export TXT ZIP',
+        mergedBtn: 'Export merged text',
+        clearBtn: 'Clear',
+        statusWaiting: 'Waiting for files.',
+        namingLabel: 'Export naming mode',
+        optSame: 'Keep original filename (PlayerController.cs → PlayerController.txt)',
+        optPath: 'Generate name from relative path',
+        optIndex: 'Auto numbering',
+        namingHint: 'Path mode replaces slashes with underscores so everything is easier to organize.',
+        prefixLabel: 'Merged file heading prefix',
+        prefixHint: 'When exporting a merged file, each script gets a heading so you can send it to AI tools or docs more easily.',
+        prefixPlaceholder: 'For example ===== FILE:',
+        listTitle: 'Script list',
+        listHint: 'Only the first few lines are previewed here. Full content is included in the exported files.',
+        side1Title: 'What it does',
+        side1a: 'Batch reads <span class="mono">.cs</span> scripts from a Unity project.',
+        side1b: 'Converts each script into its own <span class="mono">.txt</span> file.',
+        side1c: 'Exports all text files in one ZIP.',
+        side1d: 'Can also merge every script into one text file.',
+        side2Title: 'Good for',
+        side2a: 'Sharing project code with teachers, classmates, or teammates.',
+        side2b: 'Sending code to AI for analysis, refactoring, or comments.',
+        side2c: 'Archiving a project as plain-text script backups.',
+        side3Title: 'Note',
+        side3Desc: 'This page only reads text and does not modify your Unity source files. Large projects may take a few seconds to load the first time.',
+        footer: 'This tool processes files locally in the browser; FileReader is used for local text reading and JSZip is used for ZIP export.',
+        emptyTitle: 'No files yet',
+        emptyDesc: 'After importing, all Unity C# scripts will appear here.',
+        noCs: 'No .cs files were found. Please drop a Unity project folder or select multiple C# files.',
+        reading: (n) => `Reading ${n} .cs files...`,
+        loaded: (n) => `Loaded ${n} .cs files. You can export them now.`,
+        cleared: 'Cleared.',
+        zipMissing: 'JSZip failed to load. Please refresh the page and check the network.',
+        zipCreating: 'Creating ZIP...',
+        zipDone: 'ZIP export finished.',
+        mergedDone: 'Merged text export finished.',
+        lines: 'lines',
+        switchLang: '中文'
+      }
+    };
+
+    function t(key) {
+      return i18n[currentLang][key];
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+      document.title = t('pageTitle');
+      langToggle.textContent = t('switchLang');
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (t(key)) el.textContent = t(key);
+      });
+      heroDesc.innerHTML = t('heroDesc');
+      side1a.innerHTML = t('side1a');
+      side1b.innerHTML = t('side1b');
+      nameModeEl.options[0].textContent = t('optSame');
+      nameModeEl.options[1].textContent = t('optPath');
+      nameModeEl.options[2].textContent = t('optIndex');
+      headingPrefixEl.placeholder = t('prefixPlaceholder');
+      if (!scripts.length) setStatus(t('statusWaiting'));
+    }
+
+    langToggle.addEventListener('click', () => {
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      applyLanguage();
+      render();
+    });
 
     pickFiles.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', async (event) => {
@@ -227,7 +370,7 @@
     clearAllBtn.addEventListener('click', () => {
       scripts = [];
       render();
-      setStatus('已清空。');
+      setStatus(t('cleared'));
     });
 
     ['dragenter', 'dragover'].forEach(type => dropzone.addEventListener(type, (e) => {
@@ -247,10 +390,10 @@
     async function handleFiles(files) {
       const csFiles = files.filter(file => file.name.toLowerCase().endsWith('.cs'));
       if (!csFiles.length) {
-        setStatus('没有找到 .cs 文件。请拖入 Unity 项目文件夹或选择多个 C# 文件。');
+        setStatus(t('noCs'));
         return;
       }
-      setStatus(`正在读取 ${csFiles.length} 个 .cs 文件...`);
+      setStatus(t('reading')(csFiles.length));
       const loaded = [];
       for (const file of csFiles) {
         const content = await readText(file);
@@ -264,7 +407,7 @@
       }
       scripts = loaded.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'zh-CN'));
       render();
-      setStatus(`已载入 ${scripts.length} 个 .cs 文件，可以开始导出。`);
+      setStatus(t('loaded')(scripts.length));
     }
 
     function readText(file) {
@@ -279,7 +422,7 @@
     function render() {
       fileList.innerHTML = '';
       if (!scripts.length) {
-        fileList.innerHTML = '<div class="file-item"><strong>还没有文件</strong><div class="file-meta">导入后，这里会列出所有 Unity C# 脚本。</div></div>';
+        fileList.innerHTML = `<div class="file-item"><strong>${t('emptyTitle')}</strong><div class="file-meta">${t('emptyDesc')}</div></div>`;
         exportZipBtn.disabled = true;
         exportMergedBtn.disabled = true;
         updateStats();
@@ -292,7 +435,7 @@
         const preview = script.content.split(/\r?\n/).slice(0, 6).join('\n');
         item.innerHTML = `
           <strong>${index + 1}. ${escapeHtml(script.relativePath)}</strong>
-          <div class="file-meta">${formatBytes(script.size)} · ${script.lines} lines</div>
+          <div class="file-meta">${formatBytes(script.size)} · ${script.lines} ${t('lines')}</div>
           <div class="preview">${escapeHtml(preview)}</div>
         `;
         frag.appendChild(item);
@@ -322,17 +465,17 @@
     exportZipBtn.addEventListener('click', async () => {
       if (!scripts.length) return;
       if (typeof JSZip === 'undefined') {
-        setStatus('JSZip 没有加载成功，请检查网络后刷新页面。');
+        setStatus(t('zipMissing'));
         return;
       }
-      setStatus('正在生成 ZIP...');
+      setStatus(t('zipCreating'));
       const zip = new JSZip();
       scripts.forEach((script, index) => {
         zip.file(deriveTxtName(script, index), script.content);
       });
       const blob = await zip.generateAsync({ type: 'blob' });
       triggerDownload(blob, 'unity-cs-texts.zip');
-      setStatus('ZIP 已导出完成。');
+      setStatus(t('zipDone'));
     });
 
     exportMergedBtn.addEventListener('click', () => {
@@ -341,7 +484,7 @@
       const merged = scripts.map((script) => `${prefix} ${script.relativePath} =====\n\n${script.content}`).join('\n\n');
       const blob = new Blob([merged], { type: 'text/plain;charset=utf-8' });
       triggerDownload(blob, 'unity-all-scripts.txt');
-      setStatus('合并文本已导出完成。');
+      setStatus(t('mergedDone'));
     });
 
     function triggerDownload(blob, fileName) {
@@ -365,9 +508,10 @@
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>"]/g, (tag) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[tag] || tag));
+      return str.replace(/[&<>\"]/g, (tag) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' }[tag] || tag));
     }
 
+    applyLanguage();
     render();
   </script>
 </body>
