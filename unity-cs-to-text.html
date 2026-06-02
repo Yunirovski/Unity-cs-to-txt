@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unity CS 批量转文字工具</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@500,700&display=swap" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root,[data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --color-bg:#f7f6f2; --color-surface:#f9f8f5; --color-surface-2:#fbfbf9; --color-surface-offset:#edeae5; --color-border:#d4d1ca; --color-divider:#dcd9d5;
+      --color-text:#28251d; --color-text-muted:#6f6d67; --color-text-faint:#9d9b96; --color-primary:#01696f; --color-primary-hover:#0c4e54; --color-primary-highlight:#cedcd8;
+      --radius-sm:.375rem; --radius-md:.5rem; --radius-lg:.75rem; --radius-xl:1rem; --radius-full:9999px;
+      --shadow-sm:0 1px 2px rgba(20,20,18,.06); --shadow-md:0 8px 30px rgba(20,20,18,.08);
+      --font-display:'Cabinet Grotesk', 'Inter', sans-serif; --font-body:'Satoshi', 'Inter', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg:#171614; --color-surface:#1c1b19; --color-surface-2:#201f1d; --color-surface-offset:#2a2927; --color-border:#393836; --color-divider:#262523;
+      --color-text:#ece9e1; --color-text-muted:#b5b1aa; --color-text-faint:#7d7a74; --color-primary:#4f98a3; --color-primary-hover:#66acb7; --color-primary-highlight:#313b3b;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.25); --shadow-md:0 8px 30px rgba(0,0,0,.35);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+    body{margin:0;min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;background:linear-gradient(180deg,var(--color-bg),var(--color-surface));color:var(--color-text)}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit}
+    .shell{max-width:1100px;margin:0 auto;padding:var(--space-4)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding-block:var(--space-3) var(--space-8)}
+    .brand{display:flex;align-items:center;gap:var(--space-3)}
+    .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--color-primary-highlight),var(--color-surface-offset));display:grid;place-items:center;color:var(--color-primary);box-shadow:var(--shadow-sm)}
+    .logo svg{width:22px;height:22px}
+    .brand h1{font-family:var(--font-display);font-size:var(--text-lg);line-height:1.1;margin:0}
+    .brand p{margin:0;color:var(--color-text-muted);font-size:var(--text-sm)}
+    .theme-toggle{min-width:44px;min-height:44px;border:1px solid var(--color-border);background:var(--color-surface);border-radius:var(--radius-full);padding:0 var(--space-4);color:var(--color-text)}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:var(--space-6);align-items:stretch}
+    .panel{background:color-mix(in srgb,var(--color-surface) 88%, transparent);border:1px solid color-mix(in srgb,var(--color-text) 12%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)}
+    .hero-copy{padding:var(--space-8)}
+    .eyebrow{display:inline-flex;gap:var(--space-2);align-items:center;border-radius:var(--radius-full);padding:.4rem .8rem;background:var(--color-primary-highlight);color:var(--color-primary);font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .hero h2{margin:var(--space-4) 0 var(--space-3);font-family:var(--font-display);font-size:var(--text-xl);line-height:1.02;max-width:12ch}
+    .hero p{margin:0;color:var(--color-text-muted);max-width:58ch}
+    .stats{padding:var(--space-8);display:grid;gap:var(--space-4);background:linear-gradient(180deg,var(--color-surface-2),var(--color-surface))}
+    .stat{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-bg);border:1px solid var(--color-divider)}
+    .stat strong{display:block;font-family:var(--font-display);font-size:var(--text-lg)}
+    .layout{display:grid;grid-template-columns:1fr 360px;gap:var(--space-6);margin-top:var(--space-6)}
+    .workspace{padding:var(--space-6)}
+    .dropzone{border:2px dashed color-mix(in srgb,var(--color-primary) 40%, var(--color-border));border-radius:var(--radius-xl);padding:var(--space-8);text-align:center;background:linear-gradient(180deg,var(--color-surface-2),var(--color-surface));transition:.18s ease}
+    .dropzone.drag{border-color:var(--color-primary);background:var(--color-primary-highlight)}
+    .dropzone h3{margin:0 0 var(--space-2);font-size:var(--text-lg);font-family:var(--font-display)}
+    .dropzone p{margin:0 auto var(--space-4);color:var(--color-text-muted);max-width:48ch}
+    .actions{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-5)}
+    .btn{min-height:44px;border-radius:var(--radius-full);padding:.8rem 1.1rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);font-weight:700}
+    .btn.primary{background:var(--color-primary);border-color:var(--color-primary);color:#f7f6f2}
+    .btn.primary:hover{background:var(--color-primary-hover)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .controls{display:grid;gap:var(--space-4);margin-top:var(--space-6)}
+    .control-card,.side-card{padding:var(--space-5)}
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
+    label{display:grid;gap:var(--space-2);font-size:var(--text-sm);font-weight:700}
+    input[type="text"],select{width:100%;border:1px solid var(--color-border);background:var(--color-bg);color:var(--color-text);border-radius:var(--radius-md);padding:.85rem .95rem;min-height:44px}
+    .hint{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .results{margin-top:var(--space-6);display:grid;gap:var(--space-4)}
+    .result-head{display:flex;justify-content:space-between;align-items:end;gap:var(--space-4)}
+    .result-head h3{margin:0;font-size:var(--text-lg);font-family:var(--font-display)}
+    .file-list{display:grid;gap:var(--space-3);max-height:420px;overflow:auto;padding-right:var(--space-2)}
+    .file-item{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-bg);border:1px solid var(--color-divider)}
+    .file-item strong{display:block;font-size:var(--text-sm)}
+    .file-meta{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:.25rem}
+    .preview{margin-top:var(--space-2);font-size:var(--text-xs);color:var(--color-text-muted);white-space:pre-wrap;max-height:6.5em;overflow:hidden}
+    .sidebar{display:grid;gap:var(--space-4);align-self:start;position:sticky;top:var(--space-4)}
+    .side-card h3{margin:0 0 var(--space-2);font-size:var(--text-base);font-family:var(--font-display)}
+    .side-card p,.side-card li{margin:0;color:var(--color-text-muted);font-size:var(--text-sm)}
+    .side-card ul{padding-left:1.1rem;margin:0;display:grid;gap:var(--space-2)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--color-bg);padding:.12rem .4rem;border-radius:.4rem;border:1px solid var(--color-divider)}
+    .status{margin-top:var(--space-4);padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-bg);border:1px solid var(--color-divider);font-size:var(--text-sm);color:var(--color-text-muted)}
+    .footer{padding:var(--space-10) 0 var(--space-6);color:var(--color-text-faint);font-size:var(--text-xs)}
+    .hidden{display:none}
+    @media (max-width: 900px){.hero,.layout,.grid2{grid-template-columns:1fr}.sidebar{position:static}.hero h2{max-width:none}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-label="logo">
+            <path d="M6 6h7l-7 12h12l-3-5"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>Unity CS 批量转文字</h1>
+          <p>把 Unity 项目里的 .cs 文件批量导出成 .txt 或 ZIP。</p>
+        </div>
+      </div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">🌙</button>
+    </header>
+
+    <section class="hero">
+      <article class="panel hero-copy">
+        <span class="eyebrow">Client-side · No upload</span>
+        <h2>直接在浏览器里批量处理 Unity C# 文件</h2>
+        <p>把整个 Unity 项目文件夹拖进来，工具会自动筛选 <span class="mono">.cs</span> 文件，读取源码内容，并按你的命名规则输出成文字文件。所有处理都在本地浏览器完成，不会上传到服务器。</p>
+      </article>
+      <aside class="panel stats">
+        <div class="stat"><strong id="stat-files">0</strong><span>已识别 .cs 文件</span></div>
+        <div class="stat"><strong id="stat-lines">0</strong><span>源码总行数（估算）</span></div>
+        <div class="stat"><strong id="stat-size">0 KB</strong><span>文本总大小（估算）</span></div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <main class="panel workspace">
+        <div id="dropzone" class="dropzone">
+          <h3>拖入 Unity 项目文件夹或多个 .cs 文件</h3>
+          <p>支持直接拖拽文件夹、也支持点击选择多个文件。推荐把整个项目目录拖进来，网页会自动读取其中所有 C# 脚本。</p>
+          <div class="actions">
+            <button class="btn primary" id="pickFiles" type="button">选择文件 / 文件夹</button>
+            <button class="btn" id="exportZip" type="button" disabled>导出 TXT ZIP</button>
+            <button class="btn" id="exportMerged" type="button" disabled>导出合并文本</button>
+            <button class="btn" id="clearAll" type="button">清空</button>
+          </div>
+          <input id="fileInput" class="hidden" type="file" multiple webkitdirectory />
+          <div id="status" class="status">等待导入文件。</div>
+        </div>
+
+        <div class="controls">
+          <div class="grid2">
+            <div class="panel control-card">
+              <label>
+                导出命名方式
+                <select id="nameMode">
+                  <option value="same">保持原文件名（PlayerController.cs → PlayerController.txt）</option>
+                  <option value="path">按相对路径生成名称</option>
+                  <option value="index">自动编号</option>
+                </select>
+              </label>
+              <p class="hint">按路径模式会把路径中的斜杠转成下划线，方便统一整理。</p>
+            </div>
+            <div class="panel control-card">
+              <label>
+                合并文件标题前缀
+                <input id="headingPrefix" type="text" value="===== FILE:" placeholder="例如 ===== FILE:" />
+              </label>
+              <p class="hint">导出合并文本时，每个脚本会加一个标题，方便你后续喂给 AI 或文档工具。</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="results">
+          <div class="result-head">
+            <div>
+              <h3>脚本列表</h3>
+              <p class="hint">这里只显示前几行预览，完整内容会在导出文件里。</p>
+            </div>
+          </div>
+          <div id="fileList" class="file-list"></div>
+        </section>
+      </main>
+
+      <aside class="sidebar">
+        <section class="panel side-card">
+          <h3>它能做什么</h3>
+          <ul>
+            <li>批量读取 Unity 项目中的 <span class="mono">.cs</span> 脚本。</li>
+            <li>每个脚本单独转成 <span class="mono">.txt</span>。</li>
+            <li>一键导出全部文本为 ZIP。</li>
+            <li>也可以把所有脚本合并成一个总文本。</li>
+          </ul>
+        </section>
+        <section class="panel side-card">
+          <h3>适合的场景</h3>
+          <ul>
+            <li>把项目代码整理给老师、同学或队友看。</li>
+            <li>发给 AI 做代码分析、重构或注释生成。</li>
+            <li>做项目归档，把脚本转成纯文本备份。</li>
+          </ul>
+        </section>
+        <section class="panel side-card">
+          <h3>使用提醒</h3>
+          <p>这个网页只读取文本，不会修改你的 Unity 原文件。若项目很大，第一次读取会花几秒钟。</p>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="footer">本工具在浏览器本地处理文件；读取本地文件使用 FileReader，ZIP 打包依赖 JSZip。</footer>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const pickFiles = document.getElementById('pickFiles');
+    const exportZipBtn = document.getElementById('exportZip');
+    const exportMergedBtn = document.getElementById('exportMerged');
+    const clearAllBtn = document.getElementById('clearAll');
+    const dropzone = document.getElementById('dropzone');
+    const fileList = document.getElementById('fileList');
+    const statusEl = document.getElementById('status');
+    const nameModeEl = document.getElementById('nameMode');
+    const headingPrefixEl = document.getElementById('headingPrefix');
+    const statFiles = document.getElementById('stat-files');
+    const statLines = document.getElementById('stat-lines');
+    const statSize = document.getElementById('stat-size');
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+
+    let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    themeToggle.addEventListener('click', () => {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+
+    let scripts = [];
+
+    pickFiles.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async (event) => {
+      await handleFiles([...event.target.files]);
+      fileInput.value = '';
+    });
+
+    clearAllBtn.addEventListener('click', () => {
+      scripts = [];
+      render();
+      setStatus('已清空。');
+    });
+
+    ['dragenter', 'dragover'].forEach(type => dropzone.addEventListener(type, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('drag');
+    }));
+    ['dragleave', 'drop'].forEach(type => dropzone.addEventListener(type, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('drag');
+    }));
+
+    dropzone.addEventListener('drop', async (event) => {
+      const files = [...event.dataTransfer.files];
+      await handleFiles(files);
+    });
+
+    async function handleFiles(files) {
+      const csFiles = files.filter(file => file.name.toLowerCase().endsWith('.cs'));
+      if (!csFiles.length) {
+        setStatus('没有找到 .cs 文件。请拖入 Unity 项目文件夹或选择多个 C# 文件。');
+        return;
+      }
+      setStatus(`正在读取 ${csFiles.length} 个 .cs 文件...`);
+      const loaded = [];
+      for (const file of csFiles) {
+        const content = await readText(file);
+        loaded.push({
+          name: file.name,
+          relativePath: file.webkitRelativePath || file.name,
+          size: file.size,
+          content,
+          lines: content.split(/\r?\n/).length
+        });
+      }
+      scripts = loaded.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'zh-CN'));
+      render();
+      setStatus(`已载入 ${scripts.length} 个 .cs 文件，可以开始导出。`);
+    }
+
+    function readText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = reject;
+        reader.readAsText(file, 'utf-8');
+      });
+    }
+
+    function render() {
+      fileList.innerHTML = '';
+      if (!scripts.length) {
+        fileList.innerHTML = '<div class="file-item"><strong>还没有文件</strong><div class="file-meta">导入后，这里会列出所有 Unity C# 脚本。</div></div>';
+        exportZipBtn.disabled = true;
+        exportMergedBtn.disabled = true;
+        updateStats();
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      scripts.forEach((script, index) => {
+        const item = document.createElement('article');
+        item.className = 'file-item';
+        const preview = script.content.split(/\r?\n/).slice(0, 6).join('\n');
+        item.innerHTML = `
+          <strong>${index + 1}. ${escapeHtml(script.relativePath)}</strong>
+          <div class="file-meta">${formatBytes(script.size)} · ${script.lines} lines</div>
+          <div class="preview">${escapeHtml(preview)}</div>
+        `;
+        frag.appendChild(item);
+      });
+      fileList.appendChild(frag);
+      exportZipBtn.disabled = false;
+      exportMergedBtn.disabled = false;
+      updateStats();
+    }
+
+    function updateStats() {
+      const totalLines = scripts.reduce((sum, file) => sum + file.lines, 0);
+      const totalBytes = scripts.reduce((sum, file) => sum + new TextEncoder().encode(file.content).length, 0);
+      statFiles.textContent = scripts.length;
+      statLines.textContent = totalLines.toLocaleString('en-US');
+      statSize.textContent = formatBytes(totalBytes);
+    }
+
+    function deriveTxtName(script, index) {
+      const base = script.name.replace(/\.cs$/i, '.txt');
+      const mode = nameModeEl.value;
+      if (mode === 'same') return base;
+      if (mode === 'index') return `${String(index + 1).padStart(3, '0')}_${base}`;
+      return script.relativePath.replace(/[\\/]+/g, '_').replace(/\.cs$/i, '.txt');
+    }
+
+    exportZipBtn.addEventListener('click', async () => {
+      if (!scripts.length) return;
+      if (typeof JSZip === 'undefined') {
+        setStatus('JSZip 没有加载成功，请检查网络后刷新页面。');
+        return;
+      }
+      setStatus('正在生成 ZIP...');
+      const zip = new JSZip();
+      scripts.forEach((script, index) => {
+        zip.file(deriveTxtName(script, index), script.content);
+      });
+      const blob = await zip.generateAsync({ type: 'blob' });
+      triggerDownload(blob, 'unity-cs-texts.zip');
+      setStatus('ZIP 已导出完成。');
+    });
+
+    exportMergedBtn.addEventListener('click', () => {
+      if (!scripts.length) return;
+      const prefix = headingPrefixEl.value.trim() || '===== FILE:';
+      const merged = scripts.map((script) => `${prefix} ${script.relativePath} =====\n\n${script.content}`).join('\n\n');
+      const blob = new Blob([merged], { type: 'text/plain;charset=utf-8' });
+      triggerDownload(blob, 'unity-all-scripts.txt');
+      setStatus('合并文本已导出完成。');
+    });
+
+    function triggerDownload(blob, fileName) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"]/g, (tag) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[tag] || tag));
+    }
+
+    render();
+  </script>
+</body>
+</html>
