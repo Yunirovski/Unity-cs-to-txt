@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>下载中心</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-12: 3rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.9rem;
+      --radius-xl: 1.25rem;
+      --shadow-md: 0 10px 30px rgba(0,0,0,0.12);
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+    }
+
+    :root, [data-theme="light"] {
+      --color-bg: #f7f6f2;
+      --color-surface: #fbfbf9;
+      --color-surface-2: #f1efea;
+      --color-border: #d8d4cc;
+      --color-text: #24211b;
+      --color-text-muted: #706b63;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-primary-soft: rgba(1,105,111,0.10);
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #171614;
+      --color-surface: #1d1c1a;
+      --color-surface-2: #252320;
+      --color-border: #3b3834;
+      --color-text: #ece7dd;
+      --color-text-muted: #aaa295;
+      --color-primary: #56a0ab;
+      --color-primary-hover: #72b8c1;
+      --color-primary-soft: rgba(86,160,171,0.14);
+      --shadow-md: 0 12px 32px rgba(0,0,0,0.28);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background:
+        radial-gradient(circle at top right, rgba(1,105,111,0.10), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(1,105,111,0.08), transparent 24%),
+        var(--color-bg);
+    }
+
+    a, button { transition: all var(--transition); }
+
+    .shell {
+      width: min(1100px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: var(--space-8) 0 var(--space-12);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-weight: 700;
+    }
+
+    .logo-mark {
+      width: 2.4rem;
+      height: 2.4rem;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+    }
+
+    .theme-toggle {
+      min-width: 44px;
+      min-height: 44px;
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .hero {
+      padding: clamp(1.5rem, 4vw, 3rem);
+      border-radius: 1.5rem;
+      border: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-8);
+    }
+
+    [data-theme="dark"] .hero,
+    [data-theme="dark"] .card {
+      background: rgba(29,28,26,0.9);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+    }
+
+    h1 {
+      margin: 0 0 var(--space-4);
+      font-size: var(--text-2xl);
+      line-height: 1.05;
+      max-width: 10ch;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 64ch;
+      color: var(--color-text-muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: var(--space-6);
+    }
+
+    .card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      background: rgba(255,255,255,0.58);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-6);
+    }
+
+    .card h2 {
+      margin: 0 0 var(--space-3);
+      font-size: var(--text-lg);
+    }
+
+    .muted, .card p, .card li { color: var(--color-text-muted); }
+
+    .downloads {
+      display: grid;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+
+    .download-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-4);
+      align-items: center;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      padding: var(--space-4);
+    }
+
+    .download-item strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 1.03rem;
+    }
+
+    .download-item span {
+      display: block;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.8rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .btn-primary:hover { background: var(--color-primary-hover); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-text);
+    }
+
+    .btn-secondary:hover { background: var(--color-surface-2); }
+
+    .code-box {
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      overflow-x: auto;
+      font-size: 0.92rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    ol { padding-left: 1.2rem; margin: 0; }
+    li + li { margin-top: 0.6rem; }
+
+    .notice {
+      margin-top: var(--space-8);
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      .download-item { grid-template-columns: 1fr; }
+      .btn-row { justify-content: stretch; }
+      .btn-row .btn { width: 100%; }
+      h1 { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="logo" aria-label="下载中心标识">
+        <div class="logo-mark">↓</div>
+        <span>下载中心</span>
+      </div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">◐</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">独立页面 · Folder Downloads</div>
+        <h1>下载你文件夹里的文件</h1>
+        <p>这个页面是单独的新页面，专门负责下载你网站目录里的文件。你把文件放进同一个项目里的 <strong>files</strong> 文件夹，然后把链接改成对应文件名，就能直接下载。</p>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>下载列表</h2>
+          <p class="muted">下面默认按 <code>./files/文件名</code> 的方式写好了。假设你的项目结构是 <code>index.html</code> 和 <code>downloads.html</code> 在根目录，下载文件都放在 <code>files</code> 文件夹里。</p>
+
+          <div class="downloads">
+            <div class="download-item">
+              <div>
+                <strong>index.html</strong>
+                <span>HTML 文件 · 从 files 文件夹下载</span>
+              </div>
+              <div class="btn-row">
+                <a class="btn btn-primary" href="./files/index.html" download>下载</a>
+                <button class="btn btn-secondary copy-btn" type="button" data-copy="./files/index.html">复制路径</button>
+              </div>
+            </div>
+
+            <div class="download-item">
+              <div>
+                <strong>project.zip</strong>
+                <span>ZIP 文件 · 项目压缩包示例</span>
+              </div>
+              <div class="btn-row">
+                <a class="btn btn-primary" href="./files/project.zip" download>下载</a>
+                <button class="btn btn-secondary copy-btn" type="button" data-copy="./files/project.zip">复制路径</button>
+              </div>
+            </div>
+
+            <div class="download-item">
+              <div>
+                <strong>article.pdf</strong>
+                <span>PDF 文件 · 文档示例</span>
+              </div>
+              <div class="btn-row">
+                <a class="btn btn-primary" href="./files/article.pdf" download>下载</a>
+                <button class="btn btn-secondary copy-btn" type="button" data-copy="./files/article.pdf">复制路径</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="card">
+          <h2>你的目录该怎么放</h2>
+          <ol>
+            <li>在项目根目录新建一个 <code>files</code> 文件夹。</li>
+            <li>把你要下载的文件放进去，比如 <code>files/index.html</code>。</li>
+            <li>把这个页面保存成 <code>downloads.html</code>。</li>
+            <li>从主站加一个按钮跳转到 <code>downloads.html</code>。</li>
+          </ol>
+
+          <div class="code-box">Unity-cs-to-txt/
+├─ index.html
+├─ downloads.html
+└─ files/
+   ├─ index.html
+   ├─ project.zip
+   └─ article.pdf</div>
+
+          <p class="muted">如果你其实是想下载当前项目根目录里的文件，而不是 <code>files</code> 子文件夹，我也可以帮你改成直接下载根目录文件的版本。</p>
+        </aside>
+      </section>
+
+      <p class="notice">你现在只要把文件丢进 files 文件夹，再把文件名改成真实名称，就能用了。</p>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const toggle = document.querySelector('[data-theme-toggle]');
+      let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', theme);
+
+      function syncToggle() {
+        toggle.textContent = theme === 'dark' ? '☀' : '◐';
+        toggle.setAttribute('aria-label', theme === 'dark' ? '切换浅色模式' : '切换深色模式');
+      }
+      syncToggle();
+
+      toggle.addEventListener('click', function () {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', theme);
+        syncToggle();
+      });
+
+      document.querySelectorAll('.copy-btn').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const text = button.dataset.copy;
+          try {
+            await navigator.clipboard.writeText(text);
+            const oldText = button.textContent;
+            button.textContent = '已复制';
+            setTimeout(() => button.textContent = oldText, 1200);
+          } catch (err) {
+            alert('复制失败，请手动复制：' + text);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
